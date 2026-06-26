@@ -154,4 +154,61 @@ class PembayaranController extends Controller
         
         return response()->json(['success' => false]);
     }
+    /**
+     * PROSES CALLBACK SERVER-TO-SERVER DARI MIDTRANS (TIDAK BOLEH DIHAPUS)
+     * Rute ini dipanggil otomatis oleh mesin Midtrans di belakang layar.
+     */
+    public function callback(Request $request)
+    {
+        // 1. Ambil kunci rahasia dan data kiriman Midtrans
+        $serverKey = config('midtrans.server_key');
+        $orderId = $request->order_id;
+        $statusCode = $request->status_code;
+        $grossAmount = $request->gross_amount;
+        $transactionStatus = $request->transaction_status;
+
+        // 2. Verifikasi keamanan (Pastikan yang mengirim pesan ini benar-benar Midtrans, bukan hacker)
+        $hashed = hash("sha512", $orderId . $statusCode . $grossAmount . $serverKey);
+        
+        if ($hashed == $request->signature_key) {
+            
+            // 3. Jika statusnya berhasil dibayar (settlement)
+            if ($transactionStatus == 'settlement' || $transactionStatus == 'capture') {
+                
+                // Ambil ID Tagihan dari order_id (Format Bapak saat generate token: SPP-{id}-{waktu})
+                $pecahan = explode('-', $orderId);
+                $tagihanId = $pecahan[1] ?? null;
+
+                if ($tagihanId) {
+                    $tagihan = TagihanSpp::find($tagihanId);
+                    
+                    // Pastikan tagihan ditemukan dan belum lunas
+                    if ($tagihan && $tagihan->status != 'Lunas') {
+                        // Ubah jadi Lunas!
+                        $tagihan->update(['status' => 'Lunas']);
+
+                        // Catat ke buku kas (Tabel Pembayaran)
+                        $cekPembayaran = \App\Models\Pembayaran::where('tagihan_spp_id', $tagihan->id)->first();
+                        
+                        if (!$cekPembayaran) {
+                            \App\Models\Pembayaran::create([
+                                'order_id' => $orderId,
+                                'tagihan_spp_id' => $tagihan->id,
+                                'siswa_id' => $tagihan->siswa_id,
+                                'pegawai_id' => null, // Karena bayar online
+                                'tanggal_bayar' => now(),
+                                'jumlah_bayar' => $tagihan->nominal,
+                                'metode_pembayaran' => $request->payment_type ?? 'Midtrans Online',
+                                'status_bayar' => 'success',
+                                'snap_token' => $tagihan->snap_token
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 4. Wajib mengembalikan sinyal 200 OK ke Midtrans agar Midtrans tahu pesannya sudah diterima
+        return response()->json(['status' => 'success', 'message' => 'Callback diterima']);
+    }
 }

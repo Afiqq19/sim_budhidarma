@@ -5,10 +5,10 @@ namespace App\Http\Controllers\TU;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
-use App\Models\Walikelas;
+use App\Models\WaliKelas; // K besar
 use App\Models\Kelas;
 use App\Models\Jurusan;
-use App\Models\TahunAjaran; // 🔥 Tambahkan ini agar tidak error
+use App\Models\TahunAjaran;
 
 class DashboardController extends Controller
 {
@@ -22,7 +22,9 @@ class DashboardController extends Controller
         $total_alumni = Siswa::where('status_siswa', 'Alumni')->count(); 
         $total_pindah = Siswa::where('status_siswa', 'Pindah')->count(); 
         
-        $total_walikelas = Walikelas::count();
+        // 🔥 PERBAIKAN: Ingat huruf K harus besar (WaliKelas) agar tidak error di Hosting! 🔥
+        $total_walikelas = WaliKelas::count();
+        
         $total_kelas = Kelas::count();
         $total_jurusan = Jurusan::count();
 
@@ -33,9 +35,9 @@ class DashboardController extends Controller
                            ->take(5)
                            ->get();
 
-        // 🔥 PERBAIKAN: Arahkan ke tu.dashboard, BUKAN admin.dashboard 🔥
+        // Arahkan ke tu.dashboard
         return view('tu.dashboard', compact(
-            'tahunAktif', // Kirim tahun aktif ke view
+            'tahunAktif',
             'total_siswa', 'total_alumni', 'total_pindah',
             'total_walikelas', 'total_kelas', 'total_jurusan',
             'siswa_baru'

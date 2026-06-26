@@ -23,11 +23,18 @@ class NilaiController extends Controller
         }
 
         $kelas = $waliKelas->kelas; 
+        
+        // 🔥 AMBIL TAHUN AJARAN AKTIF 🔥
         $tahunAktif = TahunAjaran::where('is_active', 1)->first();
         
-        // 🔥 PERBAIKAN UTAMA: Cek apakah guru sudah punya kelas!
+        // 🔥 PENGECEKAN AMAN 1: Pastikan Tahun Ajaran Aktif Ada!
+        if (!$tahunAktif) {
+            return redirect()->route('walikelas.dashboard')->with('error', 'Tahun Ajaran aktif belum diatur oleh Tata Usaha. Silakan hubungi Administrator.');
+        }
+        
+        // Cek apakah guru sudah punya kelas!
         if (!$kelas) {
-            // Jika belum punya kelas, lempar data kosong (mencegah error 500)
+            // Jika belum punya kelas, lempar data kosong (mencegah error)
             $listMapel = collect();
             $siswas = collect();
             $selectedMapelId = null;
@@ -63,6 +70,11 @@ class NilaiController extends Controller
         ]);
 
         $tahunAktif = TahunAjaran::where('is_active', 1)->first();
+
+        // 🔥 PENGECEKAN AMAN 2 (Saat Menyimpan)
+        if (!$tahunAktif) {
+            return redirect()->back()->with('error', 'Gagal menyimpan! Tidak ada Tahun Ajaran yang aktif.');
+        }
 
         foreach ($request->nilai as $siswa_id => $v) {
             // 1. Ambil nilai dari form, jika form kosong string ('') jadikan null agar tidak error
@@ -104,8 +116,13 @@ class NilaiController extends Controller
             return redirect()->route('walikelas.dashboard')->with('error', 'Akses ditolak.');
         }
 
-        // 🔥 FOKUS HANYA PADA TAHUN AJARAN AKTIF 🔥
+        // FOKUS HANYA PADA TAHUN AJARAN AKTIF
         $tahunAktif = \App\Models\TahunAjaran::where('is_active', 1)->first();
+
+        // 🔥 PENGECEKAN AMAN 3
+        if (!$tahunAktif) {
+            return redirect()->route('walikelas.dashboard')->with('error', 'Gagal memuat rekap nilai. Tahun Ajaran aktif belum diatur.');
+        }
 
         // PENGAMAN JIKA GURU BELUM PUNYA KELAS
         if (!$waliKelas->kelas_id) {
@@ -144,6 +161,12 @@ class NilaiController extends Controller
     public function detail($id)
     {
         $tahunAktif = TahunAjaran::where('is_active', 1)->first();
+        
+        // 🔥 PENGECEKAN AMAN 4
+        if (!$tahunAktif) {
+            return redirect()->back()->with('error', 'Detail E-Rapor belum tersedia karena Tahun Ajaran aktif belum diatur.');
+        }
+
         $siswa = Siswa::with('kelas')->findOrFail($id);
 
         $nilais = Nilai::where('siswa_id', $id)

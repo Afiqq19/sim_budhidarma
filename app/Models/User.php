@@ -4,19 +4,28 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// DI SINI PERUBAHANNYA: Kita tambahkan 'username' dan 'role' di dalam atribut Fillable
-#[Fillable(['name', 'email', 'username', 'role', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    // TAMBAHKAN INI SEBAGAI GANTI ATTRIBUTE DI ATAS
+    protected $fillable = [
+        'name', 
+        'email', 
+        'username', 
+        'role', 
+        'password'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -44,7 +53,7 @@ class User extends Authenticatable
     }
 
     // [3] Relasi dari User ke Wali Kelas (Nanti berguna untuk laporan wali kelas)
-        public function waliKelas()
+    public function waliKelas()
     {
         return $this->hasOne(WaliKelas::class, 'user_id');
     }
