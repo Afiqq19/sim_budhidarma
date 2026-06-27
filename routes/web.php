@@ -193,5 +193,6 @@ Route::middleware(['auth'])->group(function () {
         // Route untuk Ganti Password
         Route::get('/profil/password', [App\Http\Controllers\Siswa\ProfilController::class, 'password'])->name('siswa.profil.password');
         Route::post('/profil/password', [App\Http\Controllers\Siswa\ProfilController::class, 'updatePassword'])->name('siswa.profil.password.update');
+        Route::get('/tagihan/cetak/{id}', [\App\Http\Controllers\Siswa\PembayaranController::class, 'cetak'])->name('siswa.tagihan.cetak');
     });
 });

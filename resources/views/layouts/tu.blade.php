@@ -33,11 +33,13 @@
             margin: 0;
             overflow-x: hidden;
             color: var(--text-main);
-            animation: fadeIn 0.6s ease-in-out;
+        }
+        .content-animasi {
+            animation: fadeIn 0.4s ease-out forwards;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -388,7 +390,7 @@
             </nav>
 
             {{-- Area Konten Dinamis --}}
-            <div class="container-fluid px-4 pb-5 flex-grow-1">
+            <div class="container-fluid px-4 pb-5 flex-grow-1 content-animasi">
                 @yield('content')
             </div>
 

@@ -108,7 +108,7 @@
                                     @endphp
 
                                     @if($pembayaran)
-                                        <a href="{{ route('riwayat.cetak', $pembayaran->id) }}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                                        <a href="{{ route('siswa.tagihan.cetak', $pembayaran->id) }}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold shadow-sm">
                                             <i class="bi bi-printer me-1"></i> Cetak Bukti
                                         </a>
                                     @else
@@ -146,7 +146,7 @@
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script type="text/javascript">
     function payNow(snapToken) {
-        if(!snapToken) {
+        if(!snapToken) {  
             alert("Sistem sedang memproses token Virtual Account Anda. Silakan muat ulang (refresh) halaman ini.");
             return;
         }
