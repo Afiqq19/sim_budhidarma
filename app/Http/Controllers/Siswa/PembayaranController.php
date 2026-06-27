@@ -93,7 +93,9 @@ class PembayaranController extends Controller
                     try {
                         $t->snap_token = Snap::getSnapToken($params);
                         $t->save();
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                        dd("ERROR DARI MIDTRANS: " . $e->getMessage());
+                    }
                 }
             }
         }
