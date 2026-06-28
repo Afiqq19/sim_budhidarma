@@ -32,7 +32,7 @@ class SiswaController extends Controller
         // 4. Eksekusi query dengan pagination dan urutkan dari yang terbaru
         $siswas = $query->latest()->paginate(10);
 
-        // 🔥 PERBAIKAN DI SINI: Pasang pengaman (if) sebelum memanggil appends
+        // Pasang pengaman (if) sebelum memanggil appends
         if ($request->has('search')) {
             $siswas->appends(['search' => $request->search]);
         }
@@ -50,38 +50,33 @@ class SiswaController extends Controller
     }
 
     public function store(Request $request)
-{
-    // Satpam mengecek kelengkapan data
-    $request->validate([
-        // 🔥 NISN dikunci max:10 sesuai struktur database
-        'nisn'         => 'required|string|max:10|unique:siswas,nisn', 
-        // 🔥 Angka sakti email: max:50
-        'email'        => 'nullable|email|max:50|unique:users,email', 
-        // 🔥 Angka sakti nama: max:35
-        'nama_lengkap' => 'required|string|max:35',
-        // Validasi tambahan agar tidak error saat relasi
-        'kelas_id'     => 'required|exists:kelas,id',
-        // Kunci input jenis kelamin hanya L atau P
-        'jk'           => 'required|in:L,P',
-    ], [
-        // --- PESAN ERROR KUSTOM ---
-        'nisn.required' => 'NISN wajib diisi.',
-        'nisn.max'      => 'NISN maksimal 10 karakter.',
-        'nisn.unique'   => 'NISN tersebut sudah terdaftar di sistem!',
-        
-        'email.email'   => 'Format email tidak valid.',
-        'email.max'     => 'Alamat email maksimal 50 karakter.',
-        'email.unique'  => 'Email tersebut sudah digunakan oleh akun lain!',
-        
-        'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
-        'nama_lengkap.max'      => 'Nama lengkap maksimal 35 karakter.',
-        
-        'kelas_id.required' => 'Kelas wajib dipilih.',
-        'kelas_id.exists'   => 'Pilihan kelas tidak valid di database.',
-        
-        'jk.required' => 'Jenis kelamin wajib dipilih.',
-        'jk.in'       => 'Pilihan jenis kelamin tidak valid.'
-    ]);
+    {
+        // Satpam mengecek kelengkapan data
+        $request->validate([
+            'nisn'         => 'required|string|max:10|unique:siswas,nisn', 
+            'email'        => 'nullable|email|max:50|unique:users,email', 
+            'nama_lengkap' => 'required|string|max:35',
+            'kelas_id'     => 'required|exists:kelas,id',
+            'jk'           => 'required|in:L,P',
+        ], [
+            // --- PESAN ERROR KUSTOM ---
+            'nisn.required' => 'NISN wajib diisi.',
+            'nisn.max'      => 'NISN maksimal 10 karakter.',
+            'nisn.unique'   => 'NISN tersebut sudah terdaftar di sistem!',
+            
+            'email.email'   => 'Format email tidak valid.',
+            'email.max'     => 'Alamat email maksimal 50 karakter.',
+            'email.unique'  => 'Email tersebut sudah digunakan oleh akun lain!',
+            
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.max'      => 'Nama lengkap maksimal 35 karakter.',
+            
+            'kelas_id.required' => 'Kelas wajib dipilih.',
+            'kelas_id.exists'   => 'Pilihan kelas tidak valid di database.',
+            
+            'jk.required' => 'Jenis kelamin wajib dipilih.',
+            'jk.in'       => 'Pilihan jenis kelamin tidak valid.'
+        ]);
 
         DB::transaction(function () use ($request) {
             
@@ -90,7 +85,7 @@ class SiswaController extends Controller
                 'name' => $request->nama_lengkap,
                 'email' => $request->email, 
                 'username' => $request->nisn,
-                'password' => Hash::make('budhidarma123'),
+                'password' => \Illuminate\Support\Facades\Hash::make('budhidarma123'),
                 'role' => 'siswa',
             ]);
 
@@ -109,7 +104,7 @@ class SiswaController extends Controller
                 'no_hp_ortu' => $request->no_hp_ortu, 
             ]);
             
-        });
+        }); // <--- SUDAH DIGANTI MENJADI KURUNG KURAWAL
 
         return redirect()->route('tu.siswa.index')->with('success', 'Data Siswa & Akun Login berhasil dibuat!');
     }
@@ -126,62 +121,60 @@ class SiswaController extends Controller
         $siswa = Siswa::findOrFail($id);
         $user = User::findOrFail($siswa->user_id);
 
-        // Satpam mengecek kelengkapan data update
-    $request->validate([
-        // 🔥 NISN max:10, pengecualian ID siswa saat update
-        'nisn'         => 'required|string|max:10|unique:siswas,nisn,' . $siswa->id, 
-        // 🔥 Aturan baru: Email max:50, pengecualian ID user saat update
-        'email'        => 'nullable|email|max:50|unique:users,email,' . $user->id, 
-        // 🔥 Nama lengkap max:35
-        'nama_lengkap' => 'required|string|max:35',
-        // Validasi database agar kelas benar-benar ada
-        'kelas_id'     => 'required|exists:kelas,id',
-        // Kunci input jenis kelamin hanya L atau P
-        'jk'           => 'required|in:L,P',
-        'status_siswa' => 'required|string' 
-    ], [
-        // --- PESAN ERROR KUSTOM ---
-        'nisn.required' => 'NISN wajib diisi.',
-        'nisn.max'      => 'NISN maksimal 10 karakter.',
-        'nisn.unique'   => 'NISN tersebut sudah terdaftar di sistem!',
-        
-        'email.email'   => 'Format email tidak valid.',
-        'email.max'     => 'Alamat email maksimal 50 karakter.',
-        'email.unique'  => 'Email tersebut sudah digunakan oleh akun lain!',
-        
-        'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
-        'nama_lengkap.max'      => 'Nama lengkap maksimal 35 karakter.',
-        
-        'kelas_id.required' => 'Kelas wajib dipilih.',
-        'kelas_id.exists'   => 'Pilihan kelas tidak valid di database.',
-        
-        'jk.required' => 'Jenis kelamin wajib dipilih.',
-        'jk.in'       => 'Pilihan jenis kelamin tidak valid.',
-        
-        'status_siswa.required' => 'Status siswa wajib diisi.',
-        'status_siswa.string'   => 'Format status siswa tidak valid.'
-    ]);
+        // 1. 🔥 VALIDASI MAJU PALING ATAS (SATPAM UTAMA) 🔥
+        $request->validate([
+            'nisn'         => 'required|string|max:10|unique:siswas,nisn,' . $siswa->id, 
+            'email'        => 'nullable|email|max:50|unique:users,email,' . $user->id, 
+            'nama_lengkap' => 'required|string|max:35',
+            'kelas_id'     => 'required|exists:kelas,id',
+            'jk'           => 'required|in:L,P',
+            'status_siswa' => 'required|string' 
+        ], [
+            // --- PESAN ERROR KUSTOM ---
+            'nisn.required' => 'NISN wajib diisi.',
+            'nisn.max'      => 'NISN maksimal 10 karakter.',
+            'nisn.unique'   => 'NISN tersebut sudah terdaftar di sistem!',
+            
+            'email.email'   => 'Format email tidak valid.',
+            'email.max'     => 'Alamat email maksimal 50 karakter.',
+            'email.unique'  => 'Email tersebut sudah digunakan oleh akun lain!',
+            
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.max'      => 'Nama lengkap maksimal 35 karakter.',
+            
+            'kelas_id.required' => 'Kelas wajib dipilih.',
+            'kelas_id.exists'   => 'Pilihan kelas tidak valid di database.',
+            
+            'jk.required' => 'Jenis kelamin wajib dipilih.',
+            'jk.in'       => 'Pilihan jenis kelamin tidak valid.',
+            
+            'status_siswa.required' => 'Status siswa wajib diisi.',
+            'status_siswa.string'   => 'Format status siswa tidak valid.'
+        ]);
 
+        // 2. JIKA VALIDASI AMAN, PROSES DATABASE BERJALAN SATU PINTU
         DB::transaction(function () use ($request, $siswa, $user) {
             
-            // 1. Siapkan data update untuk Akun Login
+            // Siapkan data update dasar untuk Akun Login
             $data_user = [
                 'name' => $request->nama_lengkap,
                 'email' => $request->email,
                 'username' => $request->nisn,
             ];
 
-            // Trik Rahasia Pembekuan Akun
+            // Pengecekan terpusat untuk logika password (manual reset vs pembekuan)
             if ($request->status_siswa == 'Pindah') {
                 $data_user['password'] = Hash::make(Str::random(40));
             } elseif ($request->status_siswa == 'Aktif' && $siswa->status_siswa == 'Pindah') {
-                $data_user['password'] = Hash::make('budhidarma123'); // Password reset
+                $data_user['password'] = Hash::make('budhidarma123');
+            } elseif ($request->filled('password')) {
+                $data_user['password'] = Hash::make($request->password);
             }
 
-            // Eksekusi update user
+            // Eksekusi pembaruan ke tabel users
             $user->update($data_user);
 
-            // 2. Update Biodata Siswa
+            // Update data profil ke tabel siswas
             $siswa->update([
                 'status_siswa' => $request->status_siswa, 
                 'kelas_id' => $request->kelas_id,

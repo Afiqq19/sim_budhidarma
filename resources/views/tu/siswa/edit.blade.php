@@ -136,6 +136,27 @@
                 </div>
             </div>
 
+            {{-- 🔥 FITUR RESET PASSWORD (OPSIONAL) 🔥 --}}
+            <div class="col-md-12 mt-3 mb-4">
+                <div class="p-4 border border-warning border-opacity-50 rounded-4 bg-warning bg-opacity-10 position-relative">
+                    <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px;">
+                        <i class="bi bi-key-fill text-warning me-1 fs-5"></i> Reset Password Akun <span class="text-muted fw-normal text-capitalize">(Opsional)</span>
+                    </label>
+                    
+                    {{-- Input Group untuk Password & Tombol Mata --}}
+                    <div class="input-group mt-2 shadow-sm rounded-3 overflow-hidden">
+                        <input type="password" id="inputPasswordReset" name="password" class="form-control form-control-lg bg-white fs-6 border-light focus-ring-warning border-end-0" placeholder="Ketik password baru di sini...">
+                        <button class="btn btn-white bg-white border-light border-start-0 text-muted px-3" type="button" id="btnTogglePassword" style="border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
+                            <i class="bi bi-eye-slash-fill fs-5" id="iconTogglePassword"></i>
+                        </button>
+                    </div>
+
+                    <small class="text-dark opacity-75 mt-2 d-block" style="font-size: 0.8rem;">
+                        <strong>Catatan:</strong> Kosongkan kolom ini jika tidak ingin mengubah password siswa. Isi HANYA JIKA siswa lupa password dan minta di-reset.
+                    </small>
+                </div>
+            </div>
+
             {{-- Tombol Aksi --}}
             <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 pt-3 border-top border-light">
                 <a href="{{ route('tu.siswa.index') }}" class="btn btn-light border px-4 py-2 fw-semibold text-secondary rounded-pill hover-btn-back">Batal & Kembali</a>
@@ -160,6 +181,11 @@
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
         background-color: #ffffff !important;
     }
+    .focus-ring-warning:focus {
+        border-color: #f59e0b !important;
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15) !important;
+        background-color: #ffffff !important;
+    }
     
     /* Efek Hover Tombol */
     .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -169,4 +195,29 @@
     /* Style Label lebih bersih */
     .form-label { margin-bottom: 0.4rem; }
 </style>
+{{-- Script untuk Toggle Mata Password --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const togglePasswordBtn = document.getElementById('btnTogglePassword');
+        const passwordInput = document.getElementById('inputPasswordReset');
+        const iconToggle = document.getElementById('iconTogglePassword');
+
+        if(togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function () {
+                // Cek tipe input saat ini
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Ganti ikon mata (eye-slash jadi eye, dan sebaliknya)
+                if(type === 'text') {
+                    iconToggle.classList.remove('bi-eye-slash-fill');
+                    iconToggle.classList.add('bi-eye-fill', 'text-primary');
+                } else {
+                    iconToggle.classList.remove('bi-eye-fill', 'text-primary');
+                    iconToggle.classList.add('bi-eye-slash-fill');
+                }
+            });
+        }
+    });
+</script>
 @endsection
